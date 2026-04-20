@@ -1,0 +1,81 @@
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-10 col-md-8 col-md-offset-2 col-sm-offset-1">
+            <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="example-form">
+                <div>
+                    <mat-form-field class="example-full-width">
+                        <mat-label>Name</mat-label>
+                        <input matInput placeholder="Ex. tushar" type="text" formControlName="name">
+                        @if(signupForm.get('name')?.invalid && signupForm.get('name')?.touched){
+                        <mat-error>field is required</mat-error>
+                        }
+                    </mat-form-field>
+                    <mat-form-field class="example-full-width">
+                        <mat-label>UserName</mat-label>
+                        <input matInput placeholder="Ex. tushar" type="text" formControlName="username">
+                        @if(signupForm.get('username')?.invalid && signupForm.get('username')?.touched){
+                        <mat-error>field is required</mat-error>
+                        }
+                    </mat-form-field>
+                    <mat-form-field class="example-full-width">
+                        <mat-label>Email</mat-label>
+                        <input type="email" matInput formControlName="email" placeholder="Ex. tushar@example.com">
+                        @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
+                        <mat-error>Please enter a valid email address</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <mat-radio-group aria-label="Select an option" formControlName="gender">
+
+                        @for (gender of genders; track gender) {
+                        <mat-radio-button [value]="gender">{{gender}}</mat-radio-button>
+
+                        }
+                    </mat-radio-group>
+                </div>
+                <div class="example-button-row">
+                    <button matButton="filled" class="btn btn-primary" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <hr>
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+        <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef> No. </th>
+            <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef> Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.name.firstname}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef> Username </th>
+            <td mat-cell *matCellDef="let element"> {{element.username}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef> Email </th>
+            <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef> Actions </th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button color="warn" (click)="deleteRow(element)">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <button mat-icon-button (click)="updateRow(element)">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+</div>
