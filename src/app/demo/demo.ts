@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,19 +22,19 @@ export interface UserData {
   templateUrl: './demo.html',
   styleUrl: './demo.scss'
 })
-export class Demo {
-  tableData: UserData[] = [];
+export class Demo implements OnInit {
+  tableData = signal<UserData[]>([]);
 
   genders = ['male', 'female'];
   signupForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
     username: new FormControl('', [Validators.required]),
-    email: new FormControl('', [Validators.required, Validators.email]),
+    email: new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
     gender: new FormControl('', [Validators.required])
   });
 
   displayedColumns: string[] = ['id', 'name', 'username', 'email', 'actions'];
-  dataSource = this.tableData;
+  dataSource = signal<UserData[]>([]);
 
   private demoSer = inject(DemoService)
 
@@ -44,32 +44,56 @@ export class Demo {
 
   onSubmit() {
     const user = { ...this.signupForm.value, password: 'pass123' };
-    this.demoSer.addItem(user).subscribe(res => {
-      this.getData();
-      this.signupForm.reset();
+    this.demoSer.addItem(user).subscribe({
+      next: res => {
+        this.getData();
+        this.signupForm.reset();
+      },
+      error: err => {
+        console.error('Error adding user:', err);
+        alert('Failed to add user. Please try again.');
+      }
     });
     console.log(this.signupForm.value);
   }
 
   getData() {
-    this.demoSer.getItems().subscribe(res => {
-      this.dataSource = res;
+    this.demoSer.getItems().subscribe({
+      next: res => {
+        this.dataSource.set(res);
+      },
+      error: err => {
+        console.error('Error loading data:', err);
+        alert('Failed to load data. Please refresh the page.');
+      }
     });
   }
 
   deleteRow(row: any) {
     console.log(row);
-    this.demoSer.deleteItem(row.id).subscribe(res => {
-      alert('Deleted!!');
-      this.getData();
-    })
+    this.demoSer.deleteItem(row.id).subscribe({
+      next: res => {
+        alert('Deleted!!');
+        this.getData();
+      },
+      error: err => {
+        console.error('Error deleting user:', err);
+        alert('Failed to delete user. Please try again.');
+      }
+    });
   }
 
    updateRow(row: any) {
     console.log(row);
-    this.demoSer.updateItem(row.id, row).subscribe(res => {
-      alert('Updated!!');
-      this.getData();
-    })
+    this.demoSer.updateItem(row.id, row).subscribe({
+      next: res => {
+        alert('Updated!!');
+        this.getData();
+      },
+      error: err => {
+        console.error('Error updating user:', err);
+        alert('Failed to update user. Please try again.');
+      }
+    });
   }
 }

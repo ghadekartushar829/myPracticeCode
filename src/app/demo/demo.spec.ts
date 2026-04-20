@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { Demo } from './demo';
 import { DemoService } from '../demo';
@@ -46,7 +46,7 @@ describe('Demo', () => {
     component.getData();
 
     expect(demoServiceSpy.getItems).toHaveBeenCalled();
-    expect(component.dataSource).toEqual(mockData);
+    expect(component.dataSource()).toEqual(mockData);
   });
 
   it('should submit form and add item', () => {
@@ -132,5 +132,71 @@ describe('Demo', () => {
 
   it('should have genders array', () => {
     expect(component.genders).toEqual(['male', 'female']);
+  });
+
+  it('should handle error in getData', () => {
+    const errorMessage = 'Network error';
+    demoServiceSpy.getItems.and.returnValue(throwError(errorMessage));
+
+    spyOn(window, 'alert');
+    spyOn(console, 'error');
+
+    component.getData();
+
+    expect(console.error).toHaveBeenCalledWith('Error loading data:', errorMessage);
+    expect(window.alert).toHaveBeenCalledWith('Failed to load data. Please refresh the page.');
+  });
+
+  it('should handle error in onSubmit', () => {
+    const formValue = {
+      name: 'Jane Doe',
+      username: 'janedoe',
+      email: 'jane@example.com',
+      gender: 'female'
+    };
+    component.signupForm.setValue(formValue);
+    const errorMessage = 'Server error';
+    demoServiceSpy.addItem.and.returnValue(throwError(errorMessage));
+
+    spyOn(window, 'alert');
+    spyOn(console, 'error');
+    spyOn(component.signupForm, 'reset');
+
+    component.onSubmit();
+
+    expect(demoServiceSpy.addItem).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith('Error adding user:', errorMessage);
+    expect(window.alert).toHaveBeenCalledWith('Failed to add user. Please try again.');
+    expect(component.signupForm.reset).not.toHaveBeenCalled();
+  });
+
+  it('should handle error in deleteRow', () => {
+    const row = { id: 1, name: 'John' };
+    const errorMessage = 'Delete error';
+    demoServiceSpy.deleteItem.and.returnValue(throwError(errorMessage));
+
+    spyOn(window, 'alert');
+    spyOn(console, 'error');
+
+    component.deleteRow(row);
+
+    expect(demoServiceSpy.deleteItem).toHaveBeenCalledWith(1);
+    expect(console.error).toHaveBeenCalledWith('Error deleting user:', errorMessage);
+    expect(window.alert).toHaveBeenCalledWith('Failed to delete user. Please try again.');
+  });
+
+  it('should handle error in updateRow', () => {
+    const row = { id: 1, name: 'Updated Name' };
+    const errorMessage = 'Update error';
+    demoServiceSpy.updateItem.and.returnValue(throwError(errorMessage));
+
+    spyOn(window, 'alert');
+    spyOn(console, 'error');
+
+    component.updateRow(row);
+
+    expect(demoServiceSpy.updateItem).toHaveBeenCalledWith(1, row);
+    expect(console.error).toHaveBeenCalledWith('Error updating user:', errorMessage);
+    expect(window.alert).toHaveBeenCalledWith('Failed to update user. Please try again.');
   });
 });
