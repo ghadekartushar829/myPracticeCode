@@ -1,10 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
+import { DemoService } from './demo';
+import { of } from 'rxjs';
 
 describe('App', () => {
   beforeEach(async () => {
+    const demoServiceSpy = jasmine.createSpyObj('DemoService', ['getItems', 'addItem', 'deleteItem', 'updateItem']);
+    demoServiceSpy.getItems.and.returnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [{ provide: DemoService, useValue: demoServiceSpy }]
     }).compileComponents();
   });
 
@@ -18,6 +24,6 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, my-first-angular-app');
+    expect(compiled.querySelector('app-demo')).toBeTruthy();
   });
 });
