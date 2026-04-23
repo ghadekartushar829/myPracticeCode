@@ -1,2 +1,29 @@
-<app-demo></app-demo>
+<!-- <app-demo></app-demo> -->
+
+<div class="app-container">
+  <nav class="app-nav">
+    <div class="nav-content">
+      <h1 class="app-title">My Angular App</h1>
+      <div class="nav-links">
+        <a href="#hangman" 
+           [class.active]="activeComponent === 'hangman'" 
+           class="nav-link" 
+           (click)="activeComponent = 'hangman'">🎮 Hangman</a>
+        <a href="#gallery" 
+           [class.active]="activeComponent === 'gallery'" 
+           class="nav-link" 
+           (click)="activeComponent = 'gallery'">🖼️ Image Gallery</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="app-content">
+    @if (activeComponent === 'hangman') {
+      <app-hangman></app-hangman>
+    }
+    @if (activeComponent === 'gallery') {
+      <app-image-gallary></app-image-gallary>
+    }
+  </div>
+</div>
 

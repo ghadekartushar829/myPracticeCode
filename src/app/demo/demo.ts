@@ -8,6 +8,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatTableModule } from '@angular/material/table';
 import { DemoService } from '../demo';
 import { MatIconModule } from '@angular/material/icon';
+import { switchMap } from 'rxjs/operators';
 
 export interface UserData {
   name: string;
@@ -44,9 +45,11 @@ export class Demo implements OnInit {
 
   onSubmit() {
     const user = { ...this.signupForm.value, password: 'pass123' };
-    this.demoSer.addItem(user).subscribe({
+    this.demoSer.addItem(user).pipe(
+      switchMap(() => this.demoSer.getItems())
+    ).subscribe({
       next: res => {
-        this.getData();
+        this.dataSource.set(res);
         this.signupForm.reset();
       },
       error: err => {
@@ -71,10 +74,12 @@ export class Demo implements OnInit {
 
   deleteRow(row: any) {
     console.log(row);
-    this.demoSer.deleteItem(row.id).subscribe({
+    this.demoSer.deleteItem(row.id).pipe(
+      switchMap(() => this.demoSer.getItems())
+    ).subscribe({
       next: res => {
+        this.dataSource.set(res);
         alert('Deleted!!');
-        this.getData();
       },
       error: err => {
         console.error('Error deleting user:', err);
@@ -85,10 +90,12 @@ export class Demo implements OnInit {
 
    updateRow(row: any) {
     console.log(row);
-    this.demoSer.updateItem(row.id, row).subscribe({
+    this.demoSer.updateItem(row.id, row).pipe(
+      switchMap(() => this.demoSer.getItems())
+    ).subscribe({
       next: res => {
+        this.dataSource.set(res);
         alert('Updated!!');
-        this.getData();
       },
       error: err => {
         console.error('Error updating user:', err);

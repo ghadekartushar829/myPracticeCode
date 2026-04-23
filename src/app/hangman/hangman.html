@@ -1,0 +1,110 @@
+<div class="hangman-container">
+  <h1>🎮 Hangman Game</h1>
+
+  <!-- Category Selection -->
+  @if (!selectedCategory) {
+    <div class="category-selection">
+      <h2>Select a Category</h2>
+      <div class="categories-grid">
+        @for (category of categories; track category.name) {
+          <button class="category-card" (click)="selectCategory(category)">
+            <div class="category-icon">{{ category.icon }}</div>
+            <div class="category-name">{{ category.name }}</div>
+            @if (getCategoryStats(category.name) > 0) {
+              <div class="category-wins">Won: {{ getCategoryStats(category.name) }}</div>
+            }
+          </button>
+        }
+      </div>
+      <button class="btn-reset" (click)="resetStats()">Reset Stats</button>
+    </div>
+  }
+
+  <!-- Game Play -->
+  @if (selectedCategory && currentWord) {
+    <div class="game-area">
+      <div class="game-header">
+        <button class="btn-back" (click)="selectedCategory = null">← Back to Categories</button>
+        <h2>{{ selectedCategory.name }} {{ selectedCategory.icon }}</h2>
+      </div>
+
+      <div class="game-content">
+        <!-- Hangman Drawing -->
+        <div class="hangman-section">
+          <div class="hangman-drawing">
+            <pre>{{ currentHangman }}</pre>
+          </div>
+          <div class="guesses-info">
+            <p>Remaining: <span class="remaining">{{ remainingGuesses }}</span>/6</p>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="(remainingGuesses / 6) * 100"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Info -->
+        <div class="game-info">
+          <!-- Word Display -->
+          <div class="word-display">
+            <div class="hint">
+              <strong>Hint:</strong> {{ currentWord.hint }}
+            </div>
+            <div class="word-letters">
+              @for (letter of displayWord; track $index) {
+                <span class="letter">{{ letter }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Game Status -->
+          @if (gameWon) {
+            <div class="game-status won">
+              <h3>🎉 You Won!</h3>
+              <p>The word was: <strong>{{ currentWord.word }}</strong></p>
+            </div>
+          }
+          @if (gameLost) {
+            <div class="game-status lost">
+              <h3>😞 Game Over!</h3>
+              <p>The word was: <strong>{{ currentWord.word }}</strong></p>
+            </div>
+          }
+
+          <!-- Wrong Letters -->
+          @if (wrongLetters.length > 0) {
+            <div class="wrong-letters">
+              <strong>Wrong guesses:</strong>
+              <div class="letters-list">
+                @for (letter of wrongLetters; track letter) {
+                  <span class="wrong-letter">{{ letter.toUpperCase() }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Letter Buttons -->
+          @if (!gameOver) {
+            <div class="letter-buttons">
+              @for (letter of getAvailableLetters(); track letter) {
+                <button 
+                  class="letter-btn"
+                  (click)="guessLetter(letter)"
+                  [disabled]="gameOver">
+                  {{ letter.toUpperCase() }}
+                </button>
+              }
+            </div>
+          }
+
+          <!-- Action Buttons -->
+          @if (gameOver) {
+            <div class="action-buttons">
+              <button class="btn-primary" (click)="startGame()">Play Again</button>
+              <button class="btn-secondary" (click)="selectedCategory = null">Change Category</button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
