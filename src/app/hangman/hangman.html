@@ -1,8 +1,60 @@
 <div class="hangman-container">
   <h1>🎮 Hangman Game</h1>
 
+  <!-- Player Management Section -->
+  <div class="players-section">
+    <div class="players-header">
+      <h2>Players</h2>
+      <button class="btn-add-player" (click)="showAddPlayer = !showAddPlayer">
+        {{ showAddPlayer ? '✕ Cancel' : '+ Add Player' }}
+      </button>
+    </div>
+
+    <!-- Add Player Form -->
+    @if (showAddPlayer) {
+      <div class="add-player-form">
+        <input 
+          type="text" 
+          [(ngModel)]="newPlayerName"
+          placeholder="Enter player name"
+          (keyup.enter)="addPlayer()"
+          class="player-input">
+        <button class="btn-create" (click)="addPlayer()">Create Player</button>
+      </div>
+    }
+
+    <!-- Players List -->
+    @if (players.length > 0) {
+      <div class="players-list">
+        @for (player of players; track player.id; let i = $index) {
+          <div class="player-card" [class.active]="currentPlayerIndex === i">
+            <div class="player-info">
+              <div class="player-name" (click)="selectPlayer(i)">{{ player.name }}</div>
+              <div class="player-score">Score: {{ player.score }}</div>
+            </div>
+            <button 
+              class="btn-delete-player"
+              (click)="deletePlayer(i)"
+              [disabled]="players.length === 1">
+              ✕
+            </button>
+          </div>
+        }
+      </div>
+
+      @if (players.length > 0) {
+        <div class="players-actions">
+          <button class="btn-reset-stats" (click)="resetPlayerStats()">Reset {{ getCurrentPlayer()?.name }}'s Stats</button>
+          <button class="btn-reset-all" (click)="resetAllStats()">Reset All Stats</button>
+        </div>
+      }
+    } @else {
+      <p class="no-players">No players yet. Create a player to start playing!</p>
+    }
+  </div>
+
   <!-- Category Selection -->
-  @if (!selectedCategory) {
+  @if (!selectedCategory && getCurrentPlayer()) {
     <div class="category-selection">
       <h2>Select a Category</h2>
       <div class="categories-grid">
@@ -10,13 +62,12 @@
           <button class="category-card" (click)="selectCategory(category)">
             <div class="category-icon">{{ category.icon }}</div>
             <div class="category-name">{{ category.name }}</div>
-            @if (getCategoryStats(category.name) > 0) {
-              <div class="category-wins">Won: {{ getCategoryStats(category.name) }}</div>
+            @if (getPlayerCategoryStats(getCurrentPlayer()!.id, category.name) > 0) {
+              <div class="category-wins">Won: {{ getPlayerCategoryStats(getCurrentPlayer()!.id, category.name) }}</div>
             }
           </button>
         }
       </div>
-      <button class="btn-reset" (click)="resetStats()">Reset Stats</button>
     </div>
   }
 
@@ -25,7 +76,10 @@
     <div class="game-area">
       <div class="game-header">
         <button class="btn-back" (click)="selectedCategory = null">← Back to Categories</button>
-        <h2>{{ selectedCategory.name }} {{ selectedCategory.icon }}</h2>
+        <div class="game-title">
+          <h2>{{ selectedCategory.name }} {{ selectedCategory.icon }}</h2>
+          <p class="current-player">Player: <strong>{{ getCurrentPlayer()?.name }}</strong> | Score: <strong>{{ getCurrentPlayer()?.score }}</strong></p>
+        </div>
       </div>
 
       <div class="game-content">
@@ -61,12 +115,14 @@
             <div class="game-status won">
               <h3>🎉 You Won!</h3>
               <p>The word was: <strong>{{ currentWord.word }}</strong></p>
+              <p class="score-gain">+10 Points! Total: {{ getCurrentPlayer()?.score }}</p>
             </div>
           }
           @if (gameLost) {
             <div class="game-status lost">
               <h3>😞 Game Over!</h3>
               <p>The word was: <strong>{{ currentWord.word }}</strong></p>
+              <p class="score-loss">-2 Points. Total: {{ getCurrentPlayer()?.score }}</p>
             </div>
           }
 
